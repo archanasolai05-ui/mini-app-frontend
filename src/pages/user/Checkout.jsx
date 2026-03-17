@@ -6,16 +6,33 @@ import { createOrder } from '../../services/orderService'
 import { getAllTables } from '../../services/tableService'
 import Navbar from '../../components/Navbar'
 
+// ✅ Same time slots as BookTable page
+const timeSlots = [
+  '11:00 AM - 1:00 PM',
+  '1:00 PM - 3:00 PM',
+  '3:00 PM - 5:00 PM',
+  '6:00 PM - 8:00 PM',
+  '7:00 PM - 9:00 PM',
+  '8:00 PM - 10:00 PM',
+]
+
 function Checkout() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { items, totalPrice } = useSelector((state) => state.cart)
 
-  const [tables, setTables]         = useState([])
+  const [tables, setTables]               = useState([])
   const [selectedTable, setSelectedTable] = useState(null)
-  const [loading, setLoading]       = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError]           = useState('')
+  const [loading, setLoading]             = useState(true)
+  const [submitting, setSubmitting]       = useState(false)
+  const [error, setError]                 = useState('')
+
+  // ✅ NEW — booking details state
+  const [bookingDetails, setBookingDetails] = useState({
+    date:       '',
+    timeSlot:   '',
+    guestCount: 1,
+  })
 
   useEffect(() => {
     fetchTables()
@@ -37,8 +54,25 @@ function Checkout() {
     return null
   }
 
+  const handleBookingChange = (e) => {
+    setBookingDetails({ ...bookingDetails, [e.target.name]: e.target.value })
+  }
+
   const handlePlaceOrder = async () => {
     setError('')
+
+    // ✅ Validate booking details if table selected
+    if (selectedTable) {
+      if (!bookingDetails.date) {
+        setError('Please select a date for your table booking')
+        return
+      }
+      if (!bookingDetails.timeSlot) {
+        setError('Please select a time slot for your table booking')
+        return
+      }
+    }
+
     setSubmitting(true)
 
     try {
@@ -48,6 +82,13 @@ function Checkout() {
           quantity:   item.quantity,
         })),
         tableId: selectedTable ? selectedTable.id : undefined,
+
+        // ✅ NEW — send booking details when table is selected
+        ...(selectedTable && {
+          date:       bookingDetails.date,
+          timeSlot:   bookingDetails.timeSlot,
+          guestCount: parseInt(bookingDetails.guestCount),
+        }),
       }
 
       await createOrder(orderData)
@@ -132,7 +173,55 @@ function Checkout() {
               </>
             )}
 
-            {/* Show selected table info */}
+            {/* ✅ NEW — Show booking fields only when table is selected */}
+            {selectedTable && (
+              <div className="checkout-booking-details">
+                <h4>📅 Booking Details for Table {selectedTable.tableNumber}</h4>
+
+                <div className="form-group">
+                  <label>Date</label>
+                  <input
+                    type="date"
+                    name="date"
+                    value={bookingDetails.date}
+                    onChange={handleBookingChange}
+                    min={new Date().toISOString().split('T')[0]}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Time Slot</label>
+                  <select
+                    name="timeSlot"
+                    value={bookingDetails.timeSlot}
+                    onChange={handleBookingChange}
+                    required
+                  >
+                    <option value="">Select a time slot</option>
+                    {timeSlots.map((slot) => (
+                      <option key={slot} value={slot}>{slot}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Number of Guests</label>
+                  <input
+                    type="number"
+                    name="guestCount"
+                    value={bookingDetails.guestCount}
+                    onChange={handleBookingChange}
+                    min="1"
+                    max={selectedTable.capacity}
+                    required
+                  />
+                  <small>Max capacity: {selectedTable.capacity} guests</small>
+                </div>
+              </div>
+            )}
+
+            {/* Show selected info */}
             {selectedTable && (
               <div className="checkout-selected-info">
                 ✅ Table {selectedTable.tableNumber} selected
