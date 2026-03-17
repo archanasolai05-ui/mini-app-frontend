@@ -1,0 +1,70 @@
+.mybookings-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+.mybookings-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+.mybookings-content h2 {
+  font-size: 1.6rem;
+  color: #2c3e50;
+  margin-bottom: 24px;
+}
+.bookings-empty {
+  text-align: center;
+  padding: 60px;
+  color: #888;
+  font-size: 1.1rem;
+}
+.booking-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.booking-info h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 6px;
+}
+.booking-info p {
+  font-size: 0.875rem;
+  color: #888;
+  margin-bottom: 4px;
+}
+.booking-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.booking-status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.status-PENDING    { background: #fff3cd; color: #856404; }
+.status-CONFIRMED  { background: #d4edda; color: #155724; }
+.status-CANCELLED  { background: #f8d7da; color: #721c24; }
+.cancel-booking-btn {
+  background: #ffe0e0;
+  color: #e74c3c;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.cancel-booking-btn:hover {
+  background: #e74c3c;
+  color: white;
+}

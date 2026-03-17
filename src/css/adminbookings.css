@@ -1,0 +1,81 @@
+.adminbookings-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+.adminbookings-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+.adminbookings-content h2 {
+  font-size: 1.6rem;
+  color: #2c3e50;
+  margin-bottom: 24px;
+}
+.booking-card-admin {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.booking-card-admin-info h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 6px;
+}
+.booking-card-admin-info p {
+  font-size: 0.875rem;
+  color: #888;
+  margin-bottom: 4px;
+}
+.booking-card-admin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+.confirm-btn {
+  background: #27ae60;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.confirm-btn:hover {
+  background: #219a52;
+}
+.adminbookings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.adminbookings-header h2 {
+  font-size: 1.6rem;
+  color: #2c3e50;
+}
+
+.admin-created-badge {
+  display: inline-block;
+  background: #e8f4fd;
+  color: #2980b9;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.updating-text {
+  font-size: 0.85rem;
+  color: #888;
+  margin-left: 8px;
+}

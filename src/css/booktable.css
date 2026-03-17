@@ -1,0 +1,142 @@
+.booktable-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+.booktable-content {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+.booktable-content h2 {
+  font-size: 1.6rem;
+  color: #2c3e50;
+  margin-bottom: 24px;
+}
+.booktable-form {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.booktable-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.booktable-form label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+.booktable-form input,
+.booktable-form select {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #f9f9f9;
+  transition: border-color 0.3s;
+}
+.booktable-form input:focus,
+.booktable-form select:focus {
+  border-color: #667eea;
+  background: white;
+}
+.book-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: opacity 0.2s;
+}
+.book-btn:hover {
+  opacity: 0.9;
+}
+.book-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.table-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.table-card:hover {
+  border-color: #667eea;
+}
+.table-card.selected {
+  border-color: #667eea;
+  background: #f0f0ff;
+}
+.table-card h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 6px;
+}
+.table-card p {
+  font-size: 0.85rem;
+  color: #888;
+}
+.booktable-section {
+  margin-bottom: 30px;
+}
+
+.booktable-section h3 {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+.booktable-error {
+  background: #ffe0e0;
+  color: #c0392b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #c0392b;
+}
+
+.booktable-success {
+  background: #e0ffe0;
+  color: #27ae60;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #27ae60;
+}
+
+.selected-label {
+  color: #667eea !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  margin-top: 8px !important;
+}
+
+.booktable-form h3 {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.booktable-form small {
+  font-size: 0.8rem;
+  color: #aaa;
+}
