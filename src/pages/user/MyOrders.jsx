@@ -54,7 +54,16 @@ function MyOrders() {
               <div className="order-card-header">
                 <div>
                   <div className="order-id">Order #{order.id}</div>
-                  <div className="order-date">{formatDate(order.createdAt)}</div>
+                  <div className="order-date">
+                    {formatDate(order.createdAt)}
+                  </div>
+                  {/* Show table or takeaway */}
+                  <div className="order-table-info">
+                    {order.tableId
+                      ? `🪑 Table ${order.tableId}`
+                      : '🥡 Takeaway'
+                    }
+                  </div>
                 </div>
                 <span className={`order-status status-${order.status}`}>
                   {order.status}

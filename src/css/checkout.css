@@ -152,3 +152,60 @@
     grid-template-columns: 1fr;
   }
 }
+.checkout-table-card {
+  background: #f9f9f9;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.checkout-table-card:hover {
+  border-color: #f39c12;
+  background: #fff9f0;
+}
+
+.checkout-table-card.selected {
+  border-color: #27ae60;
+  background: #f0fff4;
+}
+
+.checkout-table-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+
+.checkout-table-card.disabled:hover {
+  border-color: #e0e0e0;
+  background: #f0f0f0;
+}
+
+.checkout-selected-badge {
+  color: #27ae60;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.checkout-selected-info {
+  background: #f0fff4;
+  color: #27ae60;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  border-left: 4px solid #27ae60;
+}
+
+.checkout-selected-info.takeaway {
+  background: #fff9f0;
+  color: #f39c12;
+  border-left-color: #f39c12;
+}
