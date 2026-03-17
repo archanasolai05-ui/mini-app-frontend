@@ -3,7 +3,7 @@ import { getMyOrders } from '../../services/orderService'
 import Navbar from '../../components/Navbar'
 
 function MyOrders() {
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders]   = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,10 +23,10 @@ function MyOrders() {
 
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
+      day:    'numeric',
+      month:  'short',
+      year:   'numeric',
+      hour:   '2-digit',
       minute: '2-digit',
     })
   }
@@ -57,7 +57,6 @@ function MyOrders() {
                   <div className="order-date">
                     {formatDate(order.createdAt)}
                   </div>
-                  {/* Show table or takeaway */}
                   <div className="order-table-info">
                     {order.tableId
                       ? `🪑 Table ${order.tableId}`

@@ -3,8 +3,8 @@ import { getMyBookings, cancelBooking } from '../../services/bookingService'
 import Navbar from '../../components/Navbar'
 
 function MyBookings() {
-  const [bookings, setBookings] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [bookings, setBookings]     = useState([])
+  const [loading, setLoading]       = useState(true)
   const [cancelling, setCancelling] = useState(null)
 
   useEffect(() => {
@@ -40,10 +40,18 @@ function MyBookings() {
 
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: 'numeric',
+      day:   'numeric',
       month: 'short',
-      year: 'numeric',
+      year:  'numeric',
     })
+  }
+
+  // ✅ Check if booking was cancelled because table became unavailable
+  const isTableUnavailable = (booking) => {
+    return (
+      booking.status === 'CANCELLED' &&
+      booking.table?.isAvailable === false
+    )
   }
 
   if (loading) return (
@@ -73,6 +81,18 @@ function MyBookings() {
                 <p>👥 Guests: {booking.guestCount}</p>
                 {booking.table.location && (
                   <p>📍 Location: {booking.table.location}</p>
+                )}
+
+                {/* ✅ Warning if cancelled due to table unavailability */}
+                {isTableUnavailable(booking) && (
+                  <p style={{
+                    color:      '#e74c3c',
+                    fontSize:   '0.8rem',
+                    marginTop:  '6px',
+                    fontWeight: '500',
+                  }}>
+                    ⚠️ This booking was cancelled because the table is no longer available.
+                  </p>
                 )}
               </div>
 
