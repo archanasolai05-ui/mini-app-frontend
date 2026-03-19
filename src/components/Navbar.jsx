@@ -6,7 +6,7 @@ import { clearCart } from '../redux/slices/cartSlice'
 function Navbar() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { user } = useSelector((state) => state.auth)
+  const { user } = useSelector((state) => state.auth) //reads the user state from the auth slice 
   const { items } = useSelector((state) => state.cart)
 
   const handleLogout = () => {
@@ -18,7 +18,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to={user?.role === 'ADMIN' ? '/admin/dashboard' : '/menu'}>
+        <Link to={user?.role === 'ADMIN' ? '/admin/dashboard' : '/menu'}>   
           🍽️ Mini Dine-In
         </Link>
       </div>
@@ -29,8 +29,9 @@ function Navbar() {
             <Link to="/admin/dashboard">Dashboard</Link>
             <Link to="/admin/menu">Menu</Link>
             <Link to="/admin/tables">Tables</Link>
-            <Link to="/admin/orders">Orders</Link>
-            <Link to="/admin/bookings">Bookings</Link>
+            {/* ✅ Orders now handles both orders and bookings */}
+            <Link to="/admin/orders">Orders & Bookings</Link>
+            {/* ✅ REMOVED: Bookings separate link */}
           </>
         ) : (
           <>
