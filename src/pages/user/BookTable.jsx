@@ -48,6 +48,14 @@ function BookTable() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  // ✅ FIX: when table is selected, reset guestCount to 1
+  const handleTableSelect = (table) => {
+    setSelectedTable(table)
+    setFormData((prev) => ({ ...prev, guestCount: 1 }))
+    // reset guestCount to 1 whenever new table is selected
+    // so old value does not exceed new table capacity
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -55,6 +63,18 @@ function BookTable() {
 
     if (!selectedTable) {
       setError('Please select a table first!')
+      return
+    }
+
+    // ✅ FIX: extra check — guestCount cannot exceed selected table capacity
+    if (parseInt(formData.guestCount) > selectedTable.capacity) {
+      setError(`Guest count cannot exceed table capacity of ${selectedTable.capacity}`)
+      return
+    }
+
+    // ✅ FIX: guestCount must be at least 1
+    if (parseInt(formData.guestCount) < 1) {
+      setError('Guest count must be at least 1')
       return
     }
 
@@ -96,12 +116,22 @@ function BookTable() {
         {/* Tables Grid */}
         <div className="booktable-section">
           <h3>Select a Table</h3>
+
+          {/* ✅ FIX: show message to select table first */}
+          {!selectedTable && (
+            <p style={{ color: '#f59e0b', marginBottom: '12px', fontSize: '0.9rem' }}>
+              ⚠️ Please select a table before filling the booking details
+            </p>
+          )}
+
           <div className="tables-grid">
             {tables.map((table) => (
               <div
                 key={table.id}
                 className={`table-card ${selectedTable?.id === table.id ? 'selected' : ''}`}
-                onClick={() => setSelectedTable(table)}
+                onClick={() => handleTableSelect(table)}
+                // ✅ FIX: changed onClick to use handleTableSelect
+                // which also resets guestCount to 1
               >
                 <h4>Table {table.tableNumber}</h4>
                 <p>👥 Capacity: {table.capacity}</p>
@@ -129,6 +159,9 @@ function BookTable() {
               onChange={handleChange}
               min={new Date().toISOString().split('T')[0]}
               required
+              // ✅ FIX: disable until table is selected
+              disabled={!selectedTable}
+              style={{ opacity: !selectedTable ? 0.5 : 1, cursor: !selectedTable ? 'not-allowed' : 'pointer' }}
             />
           </div>
 
@@ -139,6 +172,9 @@ function BookTable() {
               value={formData.timeSlot}
               onChange={handleChange}
               required
+              // ✅ FIX: disable until table is selected
+              disabled={!selectedTable}
+              style={{ opacity: !selectedTable ? 0.5 : 1, cursor: !selectedTable ? 'not-allowed' : 'pointer' }}
             >
               <option value="">Select a time slot</option>
               {timeSlots.map((slot) => (
@@ -155,21 +191,42 @@ function BookTable() {
               value={formData.guestCount}
               onChange={handleChange}
               min="1"
-              max={selectedTable?.capacity || 10}
+              // ✅ FIX: max is ONLY table capacity — no fallback 10
+              // if no table selected → input is disabled anyway
+              max={selectedTable ? selectedTable.capacity : undefined}
               required
+              // ✅ FIX: disable until table is selected
+              disabled={!selectedTable}
+              style={{ opacity: !selectedTable ? 0.5 : 1, cursor: !selectedTable ? 'not-allowed' : 'pointer' }}
             />
-            {selectedTable && (
-              <small>Max capacity: {selectedTable.capacity} guests</small>
+            {/* ✅ FIX: show capacity info clearly */}
+            {selectedTable ? (
+              <small style={{ color: '#6b7280' }}>
+                Max capacity: {selectedTable.capacity} guests
+              </small>
+            ) : (
+              <small style={{ color: '#f59e0b' }}>
+                Select a table to see capacity
+              </small>
             )}
           </div>
 
           <button
             type="submit"
             className="book-btn"
-            disabled={submitting}
+            // ✅ FIX: disable if no table selected OR submitting
+            disabled={submitting || !selectedTable}
+            style={{ opacity: !selectedTable ? 0.6 : 1 }}
           >
             {submitting ? 'Booking...' : '✓ Confirm Booking'}
           </button>
+
+          {/* ✅ FIX: show hint if table not selected */}
+          {!selectedTable && (
+            <p style={{ textAlign: 'center', color: '#f59e0b', marginTop: '8px', fontSize: '0.85rem' }}>
+              Select a table above to enable booking
+            </p>
+          )}
         </form>
       </div>
     </div>
