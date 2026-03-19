@@ -27,7 +27,6 @@ function Checkout() {
   const [submitting, setSubmitting]       = useState(false)
   const [error, setError]                 = useState('')
 
-  // ✅ NEW — booking details state
   const [bookingDetails, setBookingDetails] = useState({
     date:       '',
     timeSlot:   '',
@@ -61,7 +60,6 @@ function Checkout() {
   const handlePlaceOrder = async () => {
     setError('')
 
-    // ✅ Validate booking details if table selected
     if (selectedTable) {
       if (!bookingDetails.date) {
         setError('Please select a date for your table booking')
@@ -83,7 +81,6 @@ function Checkout() {
         })),
         tableId: selectedTable ? selectedTable.id : undefined,
 
-        // ✅ NEW — send booking details when table is selected
         ...(selectedTable && {
           date:       bookingDetails.date,
           timeSlot:   bookingDetails.timeSlot,
@@ -173,7 +170,7 @@ function Checkout() {
               </>
             )}
 
-            {/* ✅ NEW — Show booking fields only when table is selected */}
+            {/* Booking details when table selected */}
             {selectedTable && (
               <div className="checkout-booking-details">
                 <h4>📅 Booking Details for Table {selectedTable.tableNumber}</h4>
@@ -192,11 +189,27 @@ function Checkout() {
 
                 <div className="form-group">
                   <label>Time Slot</label>
+                  {/* ✅ ONLY CHANGE — added style to match date input */}
                   <select
                     name="timeSlot"
                     value={bookingDetails.timeSlot}
                     onChange={handleBookingChange}
                     required
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '1.5px solid #d1d5db',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                      color: bookingDetails.timeSlot ? '#2c3e50' : '#9ca3af',
+                      background: 'white',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      appearance: 'none',
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 16px center',
+                    }}
                   >
                     <option value="">Select a time slot</option>
                     {timeSlots.map((slot) => (
