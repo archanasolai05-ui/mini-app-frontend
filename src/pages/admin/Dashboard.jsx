@@ -49,8 +49,8 @@ function Dashboard() {
     }
   }
 
-  // ONE function used for both orders and bookings
-  // shows: 18 Mar, 01:07 pm
+  // when order/booking was CREATED — shows date + time
+  // example: 18 Mar, 01:07 pm
   const formatDateTime = (dateStr) => {
     return new Date(dateStr).toLocaleString('en-IN', {
       day: 'numeric',
@@ -58,6 +58,17 @@ function Dashboard() {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
+      timeZone: 'Asia/Kolkata',
+    })
+  }
+
+  // when customer VISITS — shows date only (no time needed)
+  // example: 25 Mar 2026
+  const formatVisitDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
       timeZone: 'Asia/Kolkata',
     })
   }
@@ -131,7 +142,8 @@ function Dashboard() {
                 <th>Customer</th>
                 <th>Total</th>
                 <th>Status</th>
-                <th>Date</th>
+                {/* ✅ 2 date columns for orders */}
+                <th>Ordered On</th>
               </tr>
             </thead>
             <tbody>
@@ -145,6 +157,7 @@ function Dashboard() {
                       {order.status}
                     </span>
                   </td>
+                  {/* when order was placed */}
                   <td>{formatDateTime(order.createdAt)}</td>
                 </tr>
               ))}
@@ -152,7 +165,7 @@ function Dashboard() {
           </table>
         </div>
 
-        {/* Recent Bookings */}
+        {/* Recent Bookings — 2 date columns */}
         <div className="recent-section">
           <h3>Recent Bookings</h3>
           <table className="recent-table">
@@ -161,7 +174,9 @@ function Dashboard() {
                 <th>Booking ID</th>
                 <th>Customer</th>
                 <th>Table</th>
-                <th>Date</th>
+                {/* ✅ 2 date columns for bookings */}
+                <th>Booked On</th>
+                <th>Visit Date</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -171,10 +186,10 @@ function Dashboard() {
                   <td>#{booking.id}</td>
                   <td>{booking.user.name}</td>
                   <td>Table {booking.table.tableNumber}</td>
-                  {/* ✅ changed from booking.date to booking.createdAt
-                      booking.date = date user chose to visit (no time — always midnight)
-                      booking.createdAt = when booking was made (has exact time) */}
+                  {/* when user clicked confirm booking */}
                   <td>{formatDateTime(booking.createdAt)}</td>
+                  {/* actual date customer comes to restaurant */}
+                  <td>{formatVisitDate(booking.date)}</td>
                   <td>
                     <span className={`booking-status status-${booking.status}`}>
                       {booking.status}
