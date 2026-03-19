@@ -4,18 +4,16 @@ import { getAllBookings, updateBookingStatus } from '../../services/bookingServi
 import Navbar from '../../components/Navbar'
 
 function AdminOrders() {
-  const [orders, setOrders]       = useState([])
-  const [bookings, setBookings]   = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [updating, setUpdating]   = useState(null)
-  // ✅ NEW: tab to switch between Orders and Bookings
-  const [activeTab, setActiveTab] = useState('orders')
+  const [orders, setOrders]     = useState([])
+  const [bookings, setBookings] = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [updating, setUpdating] = useState(null)
 
   useEffect(() => {
     fetchAll()
   }, [])
 
-  // ✅ NEW: fetch both orders and bookings together
+  // fetch both orders and bookings together
   const fetchAll = async () => {
     try {
       const [ordersRes, bookingsRes] = await Promise.all([
@@ -48,7 +46,7 @@ function AdminOrders() {
     }
   }
 
-  // ✅ NEW: booking status update
+  // booking status update
   const handleBookingStatusChange = async (bookingId, newStatus) => {
     setUpdating(bookingId)
     try {
@@ -75,7 +73,6 @@ function AdminOrders() {
     })
   }
 
-  // ✅ NEW: format visit date (date only, no time)
   const formatVisitDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
       day: 'numeric',
@@ -112,200 +109,132 @@ function AdminOrders() {
       <div className="adminorders-content">
         <h2>All Orders 🍛</h2>
 
-        {/* ✅ NEW: Tab buttons to switch between Orders and Bookings */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-          <button
-            onClick={() => setActiveTab('orders')}
-            style={{
-              padding: '10px 24px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: '600',
-              background: activeTab === 'orders' ? '#6366f1' : '#e0e0e0',
-              color: activeTab === 'orders' ? 'white' : '#555',
-            }}
-          >
-            🍛 Orders ({orders.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('bookings')}
-            style={{
-              padding: '10px 24px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: '600',
-              background: activeTab === 'bookings' ? '#6366f1' : '#e0e0e0',
-              color: activeTab === 'bookings' ? 'white' : '#555',
-            }}
-          >
-            🪑 Bookings ({bookings.length})
-          </button>
-        </div>
+        {/* ✅ CASE 1 — Orders that have NO linked booking */}
+        {orders
+          .filter(order => !order.bookingId)
+          .map((order) => (
+            <div key={`order-${order.id}`} className="order-card-admin">
 
-        {/* ✅ ORDERS TAB — exact same as your original code */}
-        {activeTab === 'orders' && (
-          <>
-            {orders.length === 0 ? (
-              <div className="orders-empty">No orders yet!</div>
-            ) : (
-              orders.map((order) => (
-                <div key={order.id} className="order-card-admin">
-
-                  {/* Order Header */}
-                  <div className="order-card-admin-header">
-                    <div className="order-customer">
-                      <h4>Order #{order.id}</h4>
-                      <p>👤 {order.user.name} ({order.user.email})</p>
-                      {order.user.phone && (
-                        <p>📞 {order.user.phone}</p>
-                      )}
-                      <p>📅 {formatDate(order.createdAt)}</p>
-                      {order.tableId && (
-                        <p>🪑 Table #{order.tableId}</p>
-                      )}
-                      {order.createdByAdmin && (
-                        <p className="admin-created-badge">
-                          Created by Admin
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Status Badge */}
-                    <span className={`order-status status-${order.status}`}>
-                      {order.status}
-                    </span>
-                  </div>
-
-                  {/* Order Items */}
-                  <div className="order-card-admin-items">
-                    {order.items.map((item) => (
-                      <p key={item.id}>
-                        • {item.menuItem.name} x{item.quantity}
-                        → ₹{item.price * item.quantity}
-                      </p>
-                    ))}
-                  </div>
-
-                  {/* Order Footer */}
-                  <div className="order-card-admin-footer">
-                    <strong>Total: ₹{order.totalPrice}</strong>
-                    <select
-                      className="status-select"
-                      value={order.status}
-                      onChange={(e) =>
-                        handleStatusChange(order.id, e.target.value)
-                      }
-                      disabled={
-                        updating === order.id ||
-                        order.status === 'DELIVERED' ||
-                        order.status === 'CANCELLED'
-                      }
-                    >
-                      {statusOptions.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-
-                    {updating === order.id && (
-                      <span className="updating-text">Updating...</span>
-                    )}
-                  </div>
-
-                </div>
-              ))
-            )}
-          </>
-        )}
-
-        {/* ✅ NEW: BOOKINGS TAB */}
-        {activeTab === 'bookings' && (
-          <>
-            {bookings.length === 0 ? (
-              <div className="orders-empty">No bookings yet!</div>
-            ) : (
-              bookings.map((booking) => (
-                <div key={booking.id} className="order-card-admin">
-
-                  {/* Booking Header */}
-                  <div className="order-card-admin-header">
-                    <div className="order-customer">
-                      <h4>Booking #{booking.id}</h4>
-                      <p>👤 {booking.user.name} ({booking.user.email})</p>
-                      {booking.user.phone && (
-                        <p>📞 {booking.user.phone}</p>
-                      )}
-                      {/* when booking was made */}
-                      <p>📅 Booked On: {formatDate(booking.createdAt)}</p>
-                      {/* actual visit date */}
-                      <p>🗓️ Visit Date: {formatVisitDate(booking.date)}</p>
-                      <p>⏰ Time Slot: {booking.timeSlot}</p>
-                      <p>🪑 Table: {booking.table.tableNumber} — {booking.table.location}</p>
-                      <p>👥 Guests: {booking.guestCount}</p>
-                      {booking.createdByAdmin && (
-                        <p className="admin-created-badge">
-                          Created by Admin
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Booking Status Badge */}
-                    <span className={`booking-status status-${booking.status}`}>
-                      {booking.status}
-                    </span>
-                  </div>
-
-                  {/* ✅ show linked order if exists */}
-                  {booking.order && (
-                    <div className="order-card-admin-items">
-                      <p style={{ fontWeight: '600', marginBottom: '6px' }}>
-                        🍛 Linked Order #{booking.order.id}:
-                      </p>
-                      {booking.order.items?.map((item) => (
-                        <p key={item.id}>
-                          • {item.menuItem.name} x{item.quantity}
-                          → ₹{item.price * item.quantity}
-                        </p>
-                      ))}
-                      <p style={{ marginTop: '6px', fontWeight: '600' }}>
-                        Total: ₹{booking.order.totalPrice}
-                      </p>
-                    </div>
+              <div className="order-card-admin-header">
+                <div className="order-customer">
+                  <h4>Order #{order.id}</h4>
+                  <p>👤 {order.user.name} ({order.user.email})</p>
+                  {order.user.phone && <p>📞 {order.user.phone}</p>}
+                  <p>📅 {formatDate(order.createdAt)}</p>
+                  {order.tableId && <p>🪑 Table #{order.tableId}</p>}
+                  {order.createdByAdmin && (
+                    <p className="admin-created-badge">Created by Admin</p>
                   )}
-
-                  {/* Booking Footer */}
-                  <div className="order-card-admin-footer">
-                    <strong>
-                      {booking.order
-                        ? `Order Total: ₹${booking.order.totalPrice}`
-                        : 'Table Booking Only'}
-                    </strong>
-                    <select
-                      className="status-select"
-                      value={booking.status}
-                      onChange={(e) =>
-                        handleBookingStatusChange(booking.id, e.target.value)
-                      }
-                      disabled={
-                        updating === booking.id ||
-                        booking.status === 'CANCELLED'
-                      }
-                    >
-                      {bookingStatusOptions.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-
-                    {updating === booking.id && (
-                      <span className="updating-text">Updating...</span>
-                    )}
-                  </div>
-
                 </div>
-              ))
+                <span className={`order-status status-${order.status}`}>
+                  {order.status}
+                </span>
+              </div>
+
+              <div className="order-card-admin-items">
+                {order.items.map((item) => (
+                  <p key={item.id}>
+                    • {item.menuItem.name} x{item.quantity}
+                    → ₹{item.price * item.quantity}
+                  </p>
+                ))}
+              </div>
+
+              <div className="order-card-admin-footer">
+                <strong>Total: ₹{order.totalPrice}</strong>
+                <select
+                  className="status-select"
+                  value={order.status}
+                  onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                  disabled={
+                    updating === order.id ||
+                    order.status === 'DELIVERED' ||
+                    order.status === 'CANCELLED'
+                  }
+                >
+                  {statusOptions.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                {updating === order.id && (
+                  <span className="updating-text">Updating...</span>
+                )}
+              </div>
+
+            </div>
+          ))
+        }
+
+        {/* ✅ CASE 2 — Bookings (with or without linked order) */}
+        {bookings.map((booking) => (
+          <div key={`booking-${booking.id}`} className="order-card-admin">
+
+            <div className="order-card-admin-header">
+              <div className="order-customer">
+                <h4>Booking #{booking.id}</h4>
+                <p>👤 {booking.user.name} ({booking.user.email})</p>
+                {booking.user.phone && <p>📞 {booking.user.phone}</p>}
+                <p>📅 Booked On: {formatDate(booking.createdAt)}</p>
+                <p>🗓️ Visit Date: {formatVisitDate(booking.date)}</p>
+                <p>⏰ Time Slot: {booking.timeSlot}</p>
+                <p>🪑 Table: {booking.table.tableNumber} — {booking.table.location}</p>
+                <p>👥 Guests: {booking.guestCount}</p>
+                {booking.createdByAdmin && (
+                  <p className="admin-created-badge">Created by Admin</p>
+                )}
+              </div>
+              <span className={`booking-status status-${booking.status}`}>
+                {booking.status}
+              </span>
+            </div>
+
+            {/* show linked order items if exists */}
+            {booking.order && (
+              <div className="order-card-admin-items">
+                <p style={{ fontWeight: '600', marginBottom: '6px' }}>
+                  🍛 Order #{booking.order.id}:
+                </p>
+                {booking.order.items?.map((item) => (
+                  <p key={item.id}>
+                    • {item.menuItem.name} x{item.quantity}
+                    → ₹{item.price * item.quantity}
+                  </p>
+                ))}
+              </div>
             )}
-          </>
+
+            <div className="order-card-admin-footer">
+              <strong>
+                {booking.order
+                  ? `Total: ₹${booking.order.totalPrice}`
+                  : 'Table Booking Only'}
+              </strong>
+              <select
+                className="status-select"
+                value={booking.status}
+                onChange={(e) =>
+                  handleBookingStatusChange(booking.id, e.target.value)
+                }
+                disabled={
+                  updating === booking.id ||
+                  booking.status === 'CANCELLED'
+                }
+              >
+                {bookingStatusOptions.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              {updating === booking.id && (
+                <span className="updating-text">Updating...</span>
+              )}
+            </div>
+
+          </div>
+        ))}
+
+        {/* empty state */}
+        {orders.length === 0 && bookings.length === 0 && (
+          <div className="orders-empty">No orders or bookings yet!</div>
         )}
 
       </div>
