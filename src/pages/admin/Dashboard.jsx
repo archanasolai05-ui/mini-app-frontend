@@ -32,11 +32,11 @@ function Dashboard() {
       ])
 
       setStats({
-        totalOrders:    orders.data.length,
-        totalBookings:  bookings.data.length,
-        totalMenuItems: menu.data.length,
-        totalTables:    tables.data.length,
-        pendingOrders:  orders.data.filter((o) => o.status === 'PENDING').length,
+        totalOrders:     orders.data.length,
+        totalBookings:   bookings.data.length,
+        totalMenuItems:  menu.data.length,
+        totalTables:     tables.data.length,
+        pendingOrders:   orders.data.filter((o) => o.status === 'PENDING').length,
         pendingBookings: bookings.data.filter((b) => b.status === 'PENDING').length,
       })
 
@@ -49,12 +49,29 @@ function Dashboard() {
     }
   }
 
+  // ✅ CHANGE 1 — formatDate: removed hour and minute
+  // OLD: showed 05:30 am because UTC midnight + 5:30 IST offset
+  // NEW: shows only date like "20 Mar, 2026" — no time confusion
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short',
+      year: 'numeric',
+      timeZone: 'Asia/Kolkata', // force IST so date does not shift
+    })
+  }
+
+  // ✅ CHANGE 2 — formatDateTime: separate function for order createdAt
+  // orders show WHEN they were created, so time is useful here
+  // but still use IST timezone to show correct time
+  const formatDateTime = (dateStr) => {
+    return new Date(dateStr).toLocaleString('en-IN', {
+      day: 'numeric',
+      month: 'short',
       hour: '2-digit',
       minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata', // force IST
     })
   }
 
@@ -141,7 +158,8 @@ function Dashboard() {
                       {order.status}
                     </span>
                   </td>
-                  <td>{formatDate(order.createdAt)}</td>
+                  {/* ✅ CHANGE 3 — orders use formatDateTime (shows time correctly in IST) */}
+                  <td>{formatDateTime(order.createdAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -167,6 +185,7 @@ function Dashboard() {
                   <td>#{booking.id}</td>
                   <td>{booking.user.name}</td>
                   <td>Table {booking.table.tableNumber}</td>
+                  {/* ✅ CHANGE 4 — bookings use formatDate (date only, no time) */}
                   <td>{formatDate(booking.date)}</td>
                   <td>
                     <span className={`booking-status status-${booking.status}`}>
