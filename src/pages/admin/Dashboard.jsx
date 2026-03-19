@@ -49,21 +49,8 @@ function Dashboard() {
     }
   }
 
-  // ✅ CHANGE 1 — formatDate: removed hour and minute
-  // OLD: showed 05:30 am because UTC midnight + 5:30 IST offset
-  // NEW: shows only date like "20 Mar, 2026" — no time confusion
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      timeZone: 'Asia/Kolkata', // force IST so date does not shift
-    })
-  }
-
-  // ✅ CHANGE 2 — formatDateTime: separate function for order createdAt
-  // orders show WHEN they were created, so time is useful here
-  // but still use IST timezone to show correct time
+  // ONE function used for both orders and bookings
+  // shows: 18 Mar, 01:07 pm
   const formatDateTime = (dateStr) => {
     return new Date(dateStr).toLocaleString('en-IN', {
       day: 'numeric',
@@ -71,7 +58,7 @@ function Dashboard() {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
-      timeZone: 'Asia/Kolkata', // force IST
+      timeZone: 'Asia/Kolkata',
     })
   }
 
@@ -158,7 +145,6 @@ function Dashboard() {
                       {order.status}
                     </span>
                   </td>
-                  {/* ✅ CHANGE 3 — orders use formatDateTime (shows time correctly in IST) */}
                   <td>{formatDateTime(order.createdAt)}</td>
                 </tr>
               ))}
@@ -185,8 +171,10 @@ function Dashboard() {
                   <td>#{booking.id}</td>
                   <td>{booking.user.name}</td>
                   <td>Table {booking.table.tableNumber}</td>
-                  {/* ✅ CHANGE 4 — bookings use formatDate (date only, no time) */}
-                  <td>{formatDate(booking.date)}</td>
+                  {/* ✅ changed from booking.date to booking.createdAt
+                      booking.date = date user chose to visit (no time — always midnight)
+                      booking.createdAt = when booking was made (has exact time) */}
+                  <td>{formatDateTime(booking.createdAt)}</td>
                   <td>
                     <span className={`booking-status status-${booking.status}`}>
                       {booking.status}
