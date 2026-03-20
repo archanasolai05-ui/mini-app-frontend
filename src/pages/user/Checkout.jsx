@@ -6,7 +6,6 @@ import { createOrder } from '../../services/orderService'
 import { getAllTables } from '../../services/tableService'
 import Navbar from '../../components/Navbar'
 
-// ✅ Same time slots as BookTable page
 const timeSlots = [
   '11:00 AM - 1:00 PM',
   '1:00 PM - 3:00 PM',
@@ -33,6 +32,14 @@ function Checkout() {
     guestCount: 1,
   })
 
+  // ✅ Only check cart on MOUNT — if empty at start, go to menu
+  useEffect(() => {
+    if (items.length === 0) {
+      navigate('/menu')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // ← empty deps: runs once on mount only, never again
+
   useEffect(() => {
     fetchTables()
   }, [])
@@ -46,11 +53,6 @@ function Checkout() {
     } finally {
       setLoading(false)
     }
-  }
-
-  if (items.length === 0) {
-    navigate('/menu')
-    return null
   }
 
   const handleBookingChange = (e) => {
@@ -89,8 +91,17 @@ function Checkout() {
       }
 
       await createOrder(orderData)
+
+      // ✅ Navigate FIRST, then clear cart
+      //    This way the cart guard never sees an empty cart on this page
+      if (selectedTable) {
+        navigate('/my-bookings')
+      } else {
+        navigate('/my-orders')
+      }
+
       dispatch(clearCart())
-      navigate('/my-orders')
+
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to place order')
     } finally {
@@ -189,7 +200,6 @@ function Checkout() {
 
                 <div className="form-group">
                   <label>Time Slot</label>
-                  {/* ✅ ONLY CHANGE — added style to match date input */}
                   <select
                     name="timeSlot"
                     value={bookingDetails.timeSlot}
