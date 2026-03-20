@@ -7,7 +7,7 @@ import Navbar from '../../components/Navbar'
 
 function Dashboard() {
   const [stats, setStats] = useState({
-    totalOrders: 0,
+    totalOrdersOnly: 0,
     totalBookings: 0,
     totalMenuItems: 0,
     totalTables: 0,
@@ -31,16 +31,20 @@ function Dashboard() {
         getAllTables(),
       ])
 
+      // ✅ orders with no tableId and no bookingId = pure food orders
+      const ordersOnly = orders.data.filter(o => !o.bookingId && !o.tableId)
+
       setStats({
-        totalOrders:     orders.data.length,
-        totalBookings:   bookings.data.length,
-        totalMenuItems:  menu.data.length,
-        totalTables:     tables.data.length,
-        pendingOrders:   orders.data.filter((o) => o.status === 'PENDING').length,
-        pendingBookings: bookings.data.filter((b) => b.status === 'PENDING').length,
+        // ✅ CHANGE: show orders only count (no table/booking)
+        totalOrdersOnly:  ordersOnly.length,
+        totalBookings:    bookings.data.length,
+        totalMenuItems:   menu.data.length,
+        totalTables:      tables.data.length,
+        pendingOrders:    ordersOnly.filter((o) => o.status === 'PENDING').length,
+        pendingBookings:  bookings.data.filter((b) => b.status === 'PENDING').length,
       })
 
-      setRecentOrders(orders.data.slice(0, 5))
+      setRecentOrders(ordersOnly.slice(0, 5))
       setRecentBookings(bookings.data.slice(0, 5))
     } catch (err) {
       console.error(err)
@@ -49,8 +53,6 @@ function Dashboard() {
     }
   }
 
-  // when order/booking was CREATED — shows date + time
-  // example: 18 Mar, 01:07 pm
   const formatDateTime = (dateStr) => {
     return new Date(dateStr).toLocaleString('en-IN', {
       day: 'numeric',
@@ -62,8 +64,6 @@ function Dashboard() {
     })
   }
 
-  // when customer VISITS — shows date only (no time needed)
-  // example: 25 Mar 2026
   const formatVisitDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
       day: 'numeric',
@@ -88,11 +88,12 @@ function Dashboard() {
 
         {/* Stats Grid */}
         <div className="stats-grid">
+          {/* ✅ CHANGE: Orders Only count */}
           <div className="stat-card">
             <div className="stat-icon">🍛</div>
             <div className="stat-info">
-              <h3>{stats.totalOrders}</h3>
-              <p>Total Orders</p>
+              <h3>{stats.totalOrdersOnly}</h3>
+              <p>Orders Only</p>
             </div>
           </div>
           <div className="stat-card">
@@ -102,11 +103,12 @@ function Dashboard() {
               <p>Pending Orders</p>
             </div>
           </div>
+          {/* ✅ CHANGE: Bookings & Orders count */}
           <div className="stat-card">
             <div className="stat-icon">🪑</div>
             <div className="stat-info">
               <h3>{stats.totalBookings}</h3>
-              <p>Total Bookings</p>
+              <p>Bookings & Orders</p>
             </div>
           </div>
           <div className="stat-card">
@@ -132,9 +134,9 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Orders */}
+        {/* Recent Orders — orders only */}
         <div className="recent-section">
-          <h3>Recent Orders</h3>
+          <h3>Recent Orders Only</h3>
           <table className="recent-table">
             <thead>
               <tr>
@@ -142,39 +144,44 @@ function Dashboard() {
                 <th>Customer</th>
                 <th>Total</th>
                 <th>Status</th>
-                {/* ✅ 2 date columns for orders */}
                 <th>Ordered On</th>
               </tr>
             </thead>
             <tbody>
-              {recentOrders.map((order) => (
-                <tr key={order.id}>
-                  <td>#{order.id}</td>
-                  <td>{order.user.name}</td>
-                  <td>₹{order.totalPrice}</td>
-                  <td>
-                    <span className={`order-status status-${order.status}`}>
-                      {order.status}
-                    </span>
+              {recentOrders.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', color: '#888' }}>
+                    No orders only yet
                   </td>
-                  {/* when order was placed */}
-                  <td>{formatDateTime(order.createdAt)}</td>
                 </tr>
-              ))}
+              ) : (
+                recentOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td>#{order.id}</td>
+                    <td>{order.user.name}</td>
+                    <td>₹{order.totalPrice}</td>
+                    <td>
+                      <span className={`order-status status-${order.status}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td>{formatDateTime(order.createdAt)}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* Recent Bookings — 2 date columns */}
+        {/* Recent Bookings */}
         <div className="recent-section">
-          <h3>Recent Bookings</h3>
+          <h3>Recent Bookings & Orders</h3>
           <table className="recent-table">
             <thead>
               <tr>
                 <th>Booking ID</th>
                 <th>Customer</th>
                 <th>Table</th>
-                {/* ✅ 2 date columns for bookings */}
                 <th>Booked On</th>
                 <th>Visit Date</th>
                 <th>Status</th>
@@ -186,9 +193,7 @@ function Dashboard() {
                   <td>#{booking.id}</td>
                   <td>{booking.user.name}</td>
                   <td>Table {booking.table.tableNumber}</td>
-                  {/* when user clicked confirm booking */}
                   <td>{formatDateTime(booking.createdAt)}</td>
-                  {/* actual date customer comes to restaurant */}
                   <td>{formatVisitDate(booking.date)}</td>
                   <td>
                     <span className={`booking-status status-${booking.status}`}>
