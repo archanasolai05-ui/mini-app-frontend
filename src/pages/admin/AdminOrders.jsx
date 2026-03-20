@@ -83,8 +83,7 @@ function AdminOrders() {
   const statusOptions = ['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED']
   const bookingStatusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED']
 
-  // ✅ orders with NO booking — food only / takeaway
-const ordersOnly = orders.filter(order => !order.bookingId && !order.tableId)
+  const ordersOnly = orders.filter(order => !order.bookingId && !order.tableId)
 
   if (loading) return (
     <div className="adminorders-page">
@@ -99,7 +98,6 @@ const ordersOnly = orders.filter(order => !order.bookingId && !order.tableId)
       <div className="adminorders-content">
         <h2>All Orders 🍛</h2>
 
-        {/* ✅ 2 tab buttons with new names */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
           <button
             onClick={() => setActiveTab('orders')}
@@ -131,7 +129,7 @@ const ordersOnly = orders.filter(order => !order.bookingId && !order.tableId)
           </button>
         </div>
 
-        {/* ✅ ORDERS ONLY TAB — no booking linked */}
+        {/* ORDERS ONLY TAB */}
         {activeTab === 'orders' && (
           <>
             {ordersOnly.length === 0 ? (
@@ -192,7 +190,7 @@ const ordersOnly = orders.filter(order => !order.bookingId && !order.tableId)
           </>
         )}
 
-        {/* ✅ BOOKINGS & ORDERS TAB — bookings with or without linked order */}
+        {/* BOOKINGS & ORDERS TAB */}
         {activeTab === 'bookings' && (
           <>
             {bookings.length === 0 ? (
@@ -220,7 +218,6 @@ const ordersOnly = orders.filter(order => !order.bookingId && !order.tableId)
                     </span>
                   </div>
 
-                  {/* show linked order items if exists */}
                   {booking.order && (
                     <div className="order-card-admin-items">
                       <p style={{ fontWeight: '600', marginBottom: '6px' }}>
@@ -250,8 +247,10 @@ const ordersOnly = orders.filter(order => !order.bookingId && !order.tableId)
                       onChange={(e) =>
                         handleBookingStatusChange(booking.id, e.target.value)
                       }
+                      // ✅ ONLY CHANGE — added CONFIRMED to disabled condition
                       disabled={
                         updating === booking.id ||
+                        booking.status === 'CONFIRMED' ||
                         booking.status === 'CANCELLED'
                       }
                     >
