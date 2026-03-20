@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
-import { getMyOrders, updateOrderStatus } from '../../services/orderService'
+import { getMyOrders } from '../../services/orderService'
 import Navbar from '../../components/Navbar'
 
 function MyOrders() {
-  const [orders, setOrders]         = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [cancelling, setCancelling] = useState(null)
+  const [orders, setOrders]   = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchOrders()
@@ -22,23 +21,6 @@ function MyOrders() {
     }
   }
 
-  const handleCancel = async (orderId) => {
-    if (!window.confirm('Are you sure you want to cancel this order?')) return
-    setCancelling(orderId)
-    try {
-      await updateOrderStatus(orderId, 'CANCELLED')
-      setOrders(orders.map((order) =>
-        order.id === orderId
-          ? { ...order, status: 'CANCELLED' }
-          : order
-      ))
-    } catch (err) {
-      alert('Failed to cancel order')
-    } finally {
-      setCancelling(null)
-    }
-  }
-
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
       day:    'numeric',
@@ -46,16 +28,6 @@ function MyOrders() {
       year:   'numeric',
       hour:   '2-digit',
       minute: '2-digit',
-    })
-  }
-
-  // ✅ format visit date for booking
-  const formatVisitDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      day:   'numeric',
-      month: 'short',
-      year:  'numeric',
-      timeZone: 'Asia/Kolkata',
     })
   }
 
@@ -91,21 +63,6 @@ function MyOrders() {
                       : '🥡 Takeaway'
                     }
                   </div>
-
-                  {/* ✅ show booking details if order is linked to booking */}
-                  {order.booking && (
-                    <div style={{ marginTop: '4px' }}>
-                      <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                        🗓️ Visit Date: {formatVisitDate(order.booking.date)}
-                      </div>
-                      <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                        ⏰ Time Slot: {order.booking.timeSlot}
-                      </div>
-                      <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                        👥 Guests: {order.booking.guestCount}
-                      </div>
-                    </div>
-                  )}
                 </div>
                 <span className={`order-status status-${order.status}`}>
                   {order.status}
@@ -125,29 +82,6 @@ function MyOrders() {
                 <span>Total</span>
                 <span>₹{order.totalPrice}</span>
               </div>
-
-              {/* cancel button — only for PENDING, PREPARING, READY */}
-              {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
-                <div style={{ marginTop: '12px', textAlign: 'right' }}>
-                  <button
-                    onClick={() => handleCancel(order.id)}
-                    disabled={cancelling === order.id}
-                    style={{
-                      padding: '8px 20px',
-                      background: '#e74c3c',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {cancelling === order.id ? 'Cancelling...' : '✕ Cancel Order'}
-                  </button>
-                </div>
-              )}
-
             </div>
           ))
         )}

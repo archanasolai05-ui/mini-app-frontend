@@ -46,6 +46,7 @@ function MyBookings() {
     })
   }
 
+  // ✅ Check if booking was cancelled because table became unavailable
   const isTableUnavailable = (booking) => {
     return (
       booking.status === 'CANCELLED' &&
@@ -82,6 +83,7 @@ function MyBookings() {
                   <p>📍 Location: {booking.table.location}</p>
                 )}
 
+                {/* ✅ Warning if cancelled due to table unavailability */}
                 {isTableUnavailable(booking) && (
                   <p style={{
                     color:      '#e74c3c',
@@ -92,26 +94,13 @@ function MyBookings() {
                     ⚠️ This booking was cancelled because the table is no longer available.
                   </p>
                 )}
-
-                {/* ✅ show message when confirmed — cannot cancel */}
-                {booking.status === 'CONFIRMED' && (
-                  <p style={{
-                    color:      '#6366f1',
-                    fontSize:   '0.8rem',
-                    marginTop:  '6px',
-                    fontWeight: '500',
-                  }}>
-                    ✅ Booking confirmed by restaurant. To cancel contact us directly.
-                  </p>
-                )}
               </div>
 
               <div className="booking-actions">
                 <span className={`booking-status status-${booking.status}`}>
                   {booking.status}
                 </span>
-                {/* ✅ ONLY CHANGE — cancel button shows ONLY when PENDING */}
-                {booking.status === 'PENDING' && (
+                {booking.status !== 'CANCELLED' && (
                   <button
                     className="cancel-booking-btn"
                     onClick={() => handleCancel(booking.id)}

@@ -76,75 +76,11 @@ function AdminOrders() {
   const statusOptions        = ['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED']
   const bookingStatusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED']
   const ordersOnly           = orders.filter(o => !o.bookingId && !o.tableId)
-  const tableBookingOnly     = bookings.filter(b => !b.order?.id)
-  const bookingWithOrder     = bookings.filter(b => b.order?.id)
 
   if (loading) return (
     <div className="adminorders-page">
       <Navbar />
       <div className="loading">Loading...</div>
-    </div>
-  )
-
-  const BookingCard = ({ booking }) => (
-    <div className="order-card-admin" style={{ marginBottom: '16px' }}>
-      <div className="order-card-admin-header">
-        <div className="order-customer">
-          <h4>Booking #{booking.id}</h4>
-          <p>👤 {booking.user.name} ({booking.user.email})</p>
-          {booking.user.phone && <p>📞 {booking.user.phone}</p>}
-          <p>📅 Booked: {formatDate(booking.createdAt)}</p>
-          <p>🗓️ Visit: {formatVisitDate(booking.date)}</p>
-          <p>⏰ {booking.timeSlot}</p>
-          <p>🪑 Table {booking.table.tableNumber} — {booking.table.location}</p>
-          <p>👥 Guests: {booking.guestCount}</p>
-          {booking.createdByAdmin && (
-            <p className="admin-created-badge">Created by Admin</p>
-          )}
-        </div>
-        <span className={`booking-status status-${booking.status}`}>
-          {booking.status}
-        </span>
-      </div>
-
-      {booking.order && (
-        <div className="order-card-admin-items">
-          <p style={{ fontWeight: '600', marginBottom: '6px' }}>
-            🍛 Order #{booking.order.id}:
-          </p>
-          {booking.order.items?.map((item) => (
-            <p key={item.id}>
-              • {item.menuItem.name} x{item.quantity} → ₹{item.price * item.quantity}
-            </p>
-          ))}
-          <p style={{ marginTop: '6px', fontWeight: '600' }}>
-            Total: ₹{booking.order.totalPrice}
-          </p>
-        </div>
-      )}
-
-      <div className="order-card-admin-footer">
-        <strong>
-          {booking.order ? `Order Total: ₹${booking.order.totalPrice}` : 'Table Booking Only'}
-        </strong>
-        <select
-          className="status-select"
-          value={booking.status}
-          onChange={(e) => handleBookingStatusChange(booking.id, e.target.value)}
-          disabled={
-            updating === booking.id ||
-            booking.status === 'CONFIRMED' ||
-            booking.status === 'CANCELLED'
-          }
-        >
-          {bookingStatusOptions.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        {updating === booking.id && (
-          <span className="updating-text">Updating...</span>
-        )}
-      </div>
     </div>
   )
 
@@ -235,49 +171,98 @@ function AdminOrders() {
           </>
         )}
 
-        {/* BOOKINGS & ORDERS TAB — 2 columns */}
+        {/* BOOKINGS & ORDERS TAB — all bookings shown together (all have orders now) */}
         {activeTab === 'bookings' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <>
+            {bookings.length === 0 ? (
+              <div className="orders-empty">No bookings yet!</div>
+            ) : (
+              bookings.map((booking) => (
+                <div key={booking.id} className="order-card-admin">
+                  <div className="order-card-admin-header">
+                    <div className="order-customer">
+                      <h4>Booking #{booking.id}</h4>
+                      <p>👤 {booking.user.name} ({booking.user.email})</p>
+                      {booking.user.phone && <p>📞 {booking.user.phone}</p>}
+                      <p>📅 Booked On: {formatDate(booking.createdAt)}</p>
+                      <p>🗓️ Visit Date: {formatVisitDate(booking.date)}</p>
+                      <p>⏰ Time Slot: {booking.timeSlot}</p>
+                      <p>🪑 Table: {booking.table.tableNumber} — {booking.table.location}</p>
+                      <p>👥 Guests: {booking.guestCount}</p>
+                      {booking.createdByAdmin && (
+                        <p className="admin-created-badge">Created by Admin</p>
+                      )}
+                    </div>
+                    <span className={`booking-status status-${booking.status}`}>
+                      {booking.status}
+                    </span>
+                  </div>
 
-            {/* LEFT — Table Booking Only */}
-            <div>
-              <h3 style={{
-                marginBottom: '16px', fontSize: '1rem', color: '#6366f1',
-                fontWeight: '700', borderBottom: '2px solid #6366f1', paddingBottom: '8px'
-              }}>
-                🪑 Table Booking Only ({tableBookingOnly.length})
-              </h3>
-              {tableBookingOnly.length === 0 ? (
-                <p style={{ color: '#888', textAlign: 'center', marginTop: '24px' }}>
-                  No table only bookings yet
-                </p>
-              ) : (
-                tableBookingOnly.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} />
-                ))
-              )}
-            </div>
+                  {/* show linked order items */}
+                  {booking.order && (
+                    <div className="order-card-admin-items">
+                      <p style={{ fontWeight: '600', marginBottom: '6px' }}>
+                        🍛 Order #{booking.order.id}:
+                      </p>
+                      {booking.order.items?.map((item) => (
+                        <p key={item.id}>
+                          • {item.menuItem.name} x{item.quantity} → ₹{item.price * item.quantity}
+                        </p>
+                      ))}
+                      <p style={{ marginTop: '6px', fontWeight: '600' }}>
+                        Total: ₹{booking.order.totalPrice}
+                      </p>
+                    </div>
+                  )}
 
-            {/* RIGHT — Booking + Order */}
-            <div>
-              <h3 style={{
-                marginBottom: '16px', fontSize: '1rem', color: '#f59e0b',
-                fontWeight: '700', borderBottom: '2px solid #f59e0b', paddingBottom: '8px'
-              }}>
-                🍛 Booking + Order ({bookingWithOrder.length})
-              </h3>
-              {bookingWithOrder.length === 0 ? (
-                <p style={{ color: '#888', textAlign: 'center', marginTop: '24px' }}>
-                  No booking with orders yet
-                </p>
-              ) : (
-                bookingWithOrder.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} />
-                ))
-              )}
-            </div>
-
-          </div>
+                  <div className="order-card-admin-footer">
+                    <strong>
+                      {booking.order
+                        ? `Order Total: ₹${booking.order.totalPrice}`
+                        : 'No order yet'}
+                    </strong>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                      {/* booking status dropdown */}
+                      <select
+                        className="status-select"
+                        value={booking.status}
+                        onChange={(e) => handleBookingStatusChange(booking.id, e.target.value)}
+                        disabled={
+                          updating === booking.id ||
+                          booking.status === 'CONFIRMED' ||
+                          booking.status === 'CANCELLED'
+                        }
+                      >
+                        {bookingStatusOptions.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                      {/* order status dropdown if order exists */}
+                      {booking.order && (
+                        <select
+                          className="status-select"
+                          value={booking.order.status}
+                          onChange={(e) => handleStatusChange(booking.order.id, e.target.value)}
+                          disabled={
+                            updating === booking.order.id ||
+                            booking.order.status === 'DELIVERED' ||
+                            booking.order.status === 'CANCELLED'
+                          }
+                        >
+                          {statusOptions.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      )}
+                      {(updating === booking.id || updating === booking.order?.id) && (
+                        <span className="updating-text">Updating...</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </>
         )}
 
       </div>

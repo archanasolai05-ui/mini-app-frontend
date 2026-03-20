@@ -10,7 +10,6 @@ import Menu          from './pages/user/Menu'
 import Cart          from './pages/user/Cart'
 import Checkout      from './pages/user/Checkout'
 import MyOrders      from './pages/user/MyOrders'
-import BookTable     from './pages/user/BookTable'
 import MyBookings    from './pages/user/MyBookings'
 import Dashboard     from './pages/admin/Dashboard'
 import ManageMenu    from './pages/admin/ManageMenu'
@@ -96,9 +95,6 @@ function App() {
       } />
       <Route path="/my-orders" element={
         <ProtectedRoute><MyOrders /></ProtectedRoute>
-      } />
-      <Route path="/book-table" element={
-        <ProtectedRoute><BookTable /></ProtectedRoute>
       } />
       <Route path="/my-bookings" element={
         <ProtectedRoute><MyBookings /></ProtectedRoute>

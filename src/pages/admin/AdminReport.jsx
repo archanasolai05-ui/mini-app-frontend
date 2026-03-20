@@ -29,11 +29,13 @@ function AdminReport() {
 
   // ─── CALCULATIONS ─────────────────────────────────────
 
-  const ordersOnly       = orders.filter(o => !o.bookingId && !o.tableId)
-  const tableBookingOnly = bookings.filter(b => !b.order)
+  // Orders Only — no booking, no table (pure takeaway)
+  const ordersOnly = orders.filter(o => !o.bookingId && !o.tableId)
+
+  // ✅ All bookings now have orders (no standalone booking)
   const bookingWithOrder = bookings.filter(b => b.order)
 
-  // 1. Orders Only status — tracks FOOD order status
+  // 1. Orders Only status
   const orderStatusCount = {
     PENDING:   ordersOnly.filter(o => o.status === 'PENDING').length,
     PREPARING: ordersOnly.filter(o => o.status === 'PREPARING').length,
@@ -42,15 +44,7 @@ function AdminReport() {
     CANCELLED: ordersOnly.filter(o => o.status === 'CANCELLED').length,
   }
 
-  // 2. Table Booking Only — tracks RESERVATION status
-  const tableOnlyStatusCount = {
-    PENDING:   tableBookingOnly.filter(b => b.status === 'PENDING').length,
-    CONFIRMED: tableBookingOnly.filter(b => b.status === 'CONFIRMED').length,
-    CANCELLED: tableBookingOnly.filter(b => b.status === 'CANCELLED').length,
-  }
-
-  // ✅ 3. Booking + Order — tracks FOOD ORDER status (not booking status)
-  // because food is being prepared in kitchen
+  // 2. Booking + Order — food ORDER status
   const bookingOrderStatusCount = {
     PENDING:   bookingWithOrder.filter(b => b.order?.status === 'PENDING').length,
     PREPARING: bookingWithOrder.filter(b => b.order?.status === 'PREPARING').length,
@@ -59,7 +53,7 @@ function AdminReport() {
     CANCELLED: bookingWithOrder.filter(b => b.order?.status === 'CANCELLED').length,
   }
 
-  // 4. Most ordered items
+  // 3. Most ordered items
   const itemCount = {}
   orders.forEach(order => {
     order.items?.forEach(item => {
@@ -71,7 +65,7 @@ function AdminReport() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
 
-  // 5. Total revenue
+  // 4. Total revenue
   const totalRevenue = orders
     .filter(o => o.status !== 'CANCELLED')
     .reduce((sum, o) => sum + o.totalPrice, 0)
@@ -80,7 +74,7 @@ function AdminReport() {
     .filter(o => o.status === 'DELIVERED')
     .reduce((sum, o) => sum + o.totalPrice, 0)
 
-  // 6. Category counts
+  // 5. Category counts
   const categoryCount = {}
   orders.forEach(order => {
     order.items?.forEach(item => {
@@ -91,7 +85,7 @@ function AdminReport() {
   const topCategories = Object.entries(categoryCount)
     .sort((a, b) => b[1] - a[1])
 
-  // 7. Most active customers
+  // 6. Most active customers
   const customerCount = {}
   orders.forEach(order => {
     const name = order.user?.name
@@ -101,7 +95,7 @@ function AdminReport() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
 
-  // 8. Most booked tables
+  // 7. Most booked tables
   const tableCount = {}
   bookings.forEach(booking => {
     const tableNum = `Table ${booking.table?.tableNumber}`
@@ -122,10 +116,8 @@ function AdminReport() {
     READY:     '#8b5cf6',
     DELIVERED: '#10b981',
     CANCELLED: '#ef4444',
-    CONFIRMED: '#10b981',
   }
 
-  // reusable bar component
   const StatusBar = ({ status, count, total, color }) => (
     <div style={{ marginBottom: '12px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -135,10 +127,8 @@ function AdminReport() {
       <div style={{ background: '#f0f0f0', borderRadius: '999px', height: '10px', overflow: 'hidden' }}>
         <div style={{
           width: `${total ? (count / total) * 100 : 0}%`,
-          background: color,
-          height: '100%',
-          borderRadius: '999px',
-          transition: 'width 0.5s ease'
+          background: color, height: '100%',
+          borderRadius: '999px', transition: 'width 0.5s ease'
         }} />
       </div>
     </div>
@@ -189,8 +179,8 @@ function AdminReport() {
           </div>
         </div>
 
-        {/* ─── 3 STATUS BREAKDOWNS ─── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        {/* ─── 2 STATUS BREAKDOWNS (removed Table Booking Only) ─── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
 
           {/* Orders Only — food order status */}
           <div className="recent-section">
@@ -206,27 +196,13 @@ function AdminReport() {
             ))}
           </div>
 
-          {/* Table Booking Only — reservation status */}
-          <div className="recent-section">
-            <h3 style={{ color: '#8b5cf6', borderBottom: '2px solid #8b5cf6', paddingBottom: '8px', marginBottom: '16px' }}>
-              🪑 Table Booking Only
-            </h3>
-            <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '12px' }}>
-              Total: {tableBookingOnly.length} bookings
-            </p>
-            {Object.entries(tableOnlyStatusCount).map(([status, count]) => (
-              <StatusBar key={status} status={status} count={count}
-                total={tableBookingOnly.length} color={statusColors[status]} />
-            ))}
-          </div>
-
-          {/* ✅ Booking + Order — FOOD ORDER status */}
+          {/* Booking + Order — food ORDER status */}
           <div className="recent-section">
             <h3 style={{ color: '#f59e0b', borderBottom: '2px solid #f59e0b', paddingBottom: '8px', marginBottom: '16px' }}>
-              🍛 Booking + Order
+              🍛 Booking + Order Status
             </h3>
             <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '4px' }}>
-              Total: {bookingWithOrder.length} bookings
+              Total: {bookingWithOrder.length} bookings with orders
             </p>
             <p style={{ fontSize: '0.75rem', color: '#aaa', marginBottom: '12px' }}>
               * shows food order status

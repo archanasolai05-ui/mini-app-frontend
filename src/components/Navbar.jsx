@@ -37,7 +37,6 @@ function Navbar() {
         ) : (
           <>
             <Link to="/menu">Menu</Link>
-            <Link to="/book-table">Book Table</Link>
             <Link to="/my-orders">My Orders</Link>
             <Link to="/my-bookings">My Bookings</Link>
             <Link to="/cart" className="cart-link">
