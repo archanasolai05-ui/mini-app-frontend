@@ -171,7 +171,7 @@ function AdminOrders() {
           </>
         )}
 
-        {/* BOOKINGS & ORDERS TAB — all bookings shown together (all have orders now) */}
+        {/* BOOKINGS & ORDERS TAB */}
         {activeTab === 'bookings' && (
           <>
             {bookings.length === 0 ? (
@@ -222,21 +222,21 @@ function AdminOrders() {
                         : 'No order yet'}
                     </strong>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
-                      {/* booking status dropdown */}
-                      <select
-                        className="status-select"
-                        value={booking.status}
-                        onChange={(e) => handleBookingStatusChange(booking.id, e.target.value)}
-                        disabled={
-                          updating === booking.id ||
-                          booking.status === 'CONFIRMED' ||
-                          booking.status === 'CANCELLED'
-                        }
-                      >
-                        {bookingStatusOptions.map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
+
+                      {/* booking status dropdown — only show when PENDING */}
+                      {booking.status === 'PENDING' && (
+                        <select
+                          className="status-select"
+                          value={booking.status}
+                          onChange={(e) => handleBookingStatusChange(booking.id, e.target.value)}
+                          disabled={updating === booking.id}
+                        >
+                          {bookingStatusOptions.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      )}
+
                       {/* order status dropdown if order exists */}
                       {booking.order && (
                         <select
@@ -254,6 +254,7 @@ function AdminOrders() {
                           ))}
                         </select>
                       )}
+
                       {(updating === booking.id || updating === booking.order?.id) && (
                         <span className="updating-text">Updating...</span>
                       )}
