@@ -14,12 +14,20 @@ function Dashboard() {
     pendingOrders: 0,
     pendingBookings: 0,
   })
-  const [recentOrders, setRecentOrders] = useState([])
+  const [recentOrders, setRecentOrders]   = useState([])
   const [recentBookings, setRecentBookings] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading]             = useState(true)
+  // ✅ ADD last updated time
+  const [lastUpdated, setLastUpdated]     = useState(new Date())
 
   useEffect(() => {
     fetchDashboardData()
+    // ✅ auto refresh every 30 seconds
+    const interval = setInterval(() => {
+      fetchDashboardData()
+    }, 30000)
+    // ✅ cleanup when component unmounts
+    return () => clearInterval(interval)
   }, [])
 
   const fetchDashboardData = async () => {
@@ -31,11 +39,9 @@ function Dashboard() {
         getAllTables(),
       ])
 
-      // ✅ orders with no tableId and no bookingId = pure food orders
       const ordersOnly = orders.data.filter(o => !o.bookingId && !o.tableId)
 
       setStats({
-        // ✅ CHANGE: show orders only count (no table/booking)
         totalOrdersOnly:  ordersOnly.length,
         totalBookings:    bookings.data.length,
         totalMenuItems:   menu.data.length,
@@ -46,6 +52,8 @@ function Dashboard() {
 
       setRecentOrders(ordersOnly.slice(0, 5))
       setRecentBookings(bookings.data.slice(0, 5))
+      // ✅ update last refreshed time
+      setLastUpdated(new Date())
     } catch (err) {
       console.error(err)
     } finally {
@@ -84,11 +92,34 @@ function Dashboard() {
     <div className="dashboard-page">
       <Navbar />
       <div className="dashboard-content">
-        <h2>Admin Dashboard 📊</h2>
+
+        {/* ✅ header with refresh button and last updated time */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h2>Admin Dashboard 📊</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '0.8rem', color: '#888' }}>
+              🔄 Last updated: {lastUpdated.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+            <button
+              onClick={fetchDashboardData}
+              style={{
+                padding: '6px 14px',
+                background: '#6366f1',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+              }}
+            >
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
 
         {/* Stats Grid */}
         <div className="stats-grid">
-          {/* ✅ CHANGE: Orders Only count */}
           <div className="stat-card">
             <div className="stat-icon">🍛</div>
             <div className="stat-info">
@@ -103,7 +134,6 @@ function Dashboard() {
               <p>Pending Orders</p>
             </div>
           </div>
-          {/* ✅ CHANGE: Bookings & Orders count */}
           <div className="stat-card">
             <div className="stat-icon">🪑</div>
             <div className="stat-info">
@@ -134,7 +164,7 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Orders — orders only */}
+        {/* Recent Orders */}
         <div className="recent-section">
           <h3>Recent Orders Only</h3>
           <table className="recent-table">

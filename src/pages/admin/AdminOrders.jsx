@@ -9,9 +9,17 @@ function AdminOrders() {
   const [loading, setLoading]     = useState(true)
   const [updating, setUpdating]   = useState(null)
   const [activeTab, setActiveTab] = useState('orders')
+  // ✅ ADD last updated time
+  const [lastUpdated, setLastUpdated] = useState(new Date())
 
   useEffect(() => {
     fetchAll()
+    // ✅ auto refresh every 30 seconds
+    const interval = setInterval(() => {
+      fetchAll()
+    }, 30000)
+    // ✅ cleanup when component unmounts
+    return () => clearInterval(interval)
   }, [])
 
   const fetchAll = async () => {
@@ -22,6 +30,8 @@ function AdminOrders() {
       ])
       setOrders(ordersRes.data)
       setBookings(bookingsRes.data)
+      // ✅ update last refreshed time
+      setLastUpdated(new Date())
     } catch (err) {
       console.error(err)
     } finally {
@@ -82,7 +92,6 @@ function AdminOrders() {
 
   const statusOptions = ['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED']
   const bookingStatusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED']
-
   const ordersOnly = orders.filter(order => !order.bookingId && !order.tableId)
 
   if (loading) return (
@@ -96,7 +105,31 @@ function AdminOrders() {
     <div className="adminorders-page">
       <Navbar />
       <div className="adminorders-content">
-        <h2>All Orders 🍛</h2>
+
+        {/* ✅ header with refresh button and last updated time */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <h2>All Orders 🍛</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '0.8rem', color: '#888' }}>
+              🔄 Last updated: {lastUpdated.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+            <button
+              onClick={fetchAll}
+              style={{
+                padding: '6px 14px',
+                background: '#6366f1',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+              }}
+            >
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
 
         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
           <button
@@ -137,7 +170,6 @@ function AdminOrders() {
             ) : (
               ordersOnly.map((order) => (
                 <div key={order.id} className="order-card-admin">
-
                   <div className="order-card-admin-header">
                     <div className="order-customer">
                       <h4>Order #{order.id}</h4>
@@ -183,7 +215,6 @@ function AdminOrders() {
                       <span className="updating-text">Updating...</span>
                     )}
                   </div>
-
                 </div>
               ))
             )}
@@ -198,7 +229,6 @@ function AdminOrders() {
             ) : (
               bookings.map((booking) => (
                 <div key={booking.id} className="order-card-admin">
-
                   <div className="order-card-admin-header">
                     <div className="order-customer">
                       <h4>Booking #{booking.id}</h4>
@@ -247,7 +277,6 @@ function AdminOrders() {
                       onChange={(e) =>
                         handleBookingStatusChange(booking.id, e.target.value)
                       }
-                      // ✅ ONLY CHANGE — added CONFIRMED to disabled condition
                       disabled={
                         updating === booking.id ||
                         booking.status === 'CONFIRMED' ||
@@ -262,7 +291,6 @@ function AdminOrders() {
                       <span className="updating-text">Updating...</span>
                     )}
                   </div>
-
                 </div>
               ))
             )}
