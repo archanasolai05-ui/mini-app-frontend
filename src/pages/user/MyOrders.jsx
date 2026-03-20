@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { getMyOrders } from '../../services/orderService'
+import { getMyOrders, updateOrderStatus } from '../../services/orderService'
 import Navbar from '../../components/Navbar'
 
 function MyOrders() {
-  const [orders, setOrders]   = useState([])
-  const [loading, setLoading] = useState(true)
+  const [orders, setOrders]     = useState([])
+  const [loading, setLoading]   = useState(true)
+  // ✅ ADD cancelling state
+  const [cancelling, setCancelling] = useState(null)
 
   useEffect(() => {
     fetchOrders()
@@ -18,6 +20,24 @@ function MyOrders() {
       console.error(err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // ✅ ADD cancel handler
+  const handleCancel = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return
+    setCancelling(orderId)
+    try {
+      await updateOrderStatus(orderId, 'CANCELLED')
+      setOrders(orders.map((order) =>
+        order.id === orderId
+          ? { ...order, status: 'CANCELLED' }
+          : order
+      ))
+    } catch (err) {
+      alert('Failed to cancel order')
+    } finally {
+      setCancelling(null)
     }
   }
 
@@ -82,6 +102,29 @@ function MyOrders() {
                 <span>Total</span>
                 <span>₹{order.totalPrice}</span>
               </div>
+
+              {/* ✅ ADD cancel button — only show if not delivered or cancelled */}
+              {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
+                <div style={{ marginTop: '12px', textAlign: 'right' }}>
+                  <button
+                    onClick={() => handleCancel(order.id)}
+                    disabled={cancelling === order.id}
+                    style={{
+                      padding: '8px 20px',
+                      background: '#e74c3c',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    {cancelling === order.id ? 'Cancelling...' : '✕ Cancel Order'}
+                  </button>
+                </div>
+              )}
+
             </div>
           ))
         )}
