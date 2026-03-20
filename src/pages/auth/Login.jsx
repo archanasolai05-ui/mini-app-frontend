@@ -93,7 +93,7 @@ function Login() {
                 color: '#aaa',
               }}
             >
-              {showPassword ? '🙈' : '👁️'}
+              {showPassword ? '🙈' : ' '}
             </span>
           </div>
 
