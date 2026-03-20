@@ -6,7 +6,6 @@ import { createOrder } from '../../services/orderService'
 import { getAllTables } from '../../services/tableService'
 import Navbar from '../../components/Navbar'
 
-// ✅ Same time slots as BookTable page
 const timeSlots = [
   '11:00 AM - 1:00 PM',
   '1:00 PM - 3:00 PM',
@@ -26,6 +25,8 @@ function Checkout() {
   const [loading, setLoading]             = useState(true)
   const [submitting, setSubmitting]       = useState(false)
   const [error, setError]                 = useState('')
+  // ✅ ADD success state
+  const [success, setSuccess]             = useState('')
 
   const [bookingDetails, setBookingDetails] = useState({
     date:       '',
@@ -48,7 +49,7 @@ function Checkout() {
     }
   }
 
-  if (items.length === 0) {
+  if (items.length === 0 && !success) {
     navigate('/menu')
     return null
   }
@@ -59,6 +60,7 @@ function Checkout() {
 
   const handlePlaceOrder = async () => {
     setError('')
+    setSuccess('')
 
     if (selectedTable) {
       if (!bookingDetails.date) {
@@ -90,7 +92,13 @@ function Checkout() {
 
       await createOrder(orderData)
       dispatch(clearCart())
-      navigate('/my-orders')
+
+      // ✅ show success message then navigate after 2 seconds
+      setSuccess('🎉 Order placed successfully! Redirecting to your orders...')
+      setTimeout(() => {
+        navigate('/my-orders')
+      }, 2000)
+
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to place order')
     } finally {
@@ -104,7 +112,23 @@ function Checkout() {
       <div className="checkout-content">
         <h2>Checkout 🧾</h2>
 
-        {error && <div className="checkout-error">{error}</div>}
+        {error   && <div className="checkout-error">{error}</div>}
+        {/* ✅ success message shown here */}
+        {success && (
+          <div style={{
+            background: '#d1fae5',
+            border: '1px solid #6ee7b7',
+            borderRadius: '8px',
+            padding: '16px',
+            marginBottom: '16px',
+            color: '#065f46',
+            fontWeight: '600',
+            textAlign: 'center',
+            fontSize: '1rem',
+          }}>
+            {success}
+          </div>
+        )}
 
         <div className="checkout-layout">
 
@@ -189,7 +213,6 @@ function Checkout() {
 
                 <div className="form-group">
                   <label>Time Slot</label>
-                  {/* ✅ ONLY CHANGE — added style to match date input */}
                   <select
                     name="timeSlot"
                     value={bookingDetails.timeSlot}
@@ -234,7 +257,6 @@ function Checkout() {
               </div>
             )}
 
-            {/* Show selected info */}
             {selectedTable && (
               <div className="checkout-selected-info">
                 ✅ Table {selectedTable.tableNumber} selected
@@ -251,7 +273,7 @@ function Checkout() {
             <button
               className="place-order-btn"
               onClick={handlePlaceOrder}
-              disabled={submitting}
+              disabled={submitting || !!success}
             >
               {submitting ? 'Placing Order...' : '✓ Place Order'}
             </button>
@@ -259,6 +281,7 @@ function Checkout() {
             <button
               className="back-btn"
               onClick={() => navigate('/cart')}
+              disabled={!!success}
             >
               ← Back to Cart
             </button>
