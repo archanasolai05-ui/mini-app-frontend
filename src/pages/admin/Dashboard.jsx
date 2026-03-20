@@ -14,19 +14,16 @@ function Dashboard() {
     pendingOrders: 0,
     pendingBookings: 0,
   })
-  const [recentOrders, setRecentOrders]   = useState([])
+  const [recentOrders, setRecentOrders]     = useState([])
   const [recentBookings, setRecentBookings] = useState([])
-  const [loading, setLoading]             = useState(true)
-  // ✅ ADD last updated time
-  const [lastUpdated, setLastUpdated]     = useState(new Date())
+  const [loading, setLoading]               = useState(true)
 
   useEffect(() => {
     fetchDashboardData()
-    // ✅ auto refresh every 30 seconds
+    // ✅ auto refresh every 30 seconds (no button shown)
     const interval = setInterval(() => {
       fetchDashboardData()
     }, 30000)
-    // ✅ cleanup when component unmounts
     return () => clearInterval(interval)
   }, [])
 
@@ -52,8 +49,6 @@ function Dashboard() {
 
       setRecentOrders(ordersOnly.slice(0, 5))
       setRecentBookings(bookings.data.slice(0, 5))
-      // ✅ update last refreshed time
-      setLastUpdated(new Date())
     } catch (err) {
       console.error(err)
     } finally {
@@ -93,30 +88,8 @@ function Dashboard() {
       <Navbar />
       <div className="dashboard-content">
 
-        {/* ✅ header with refresh button and last updated time */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2>Admin Dashboard 📊</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '0.8rem', color: '#888' }}>
-              🔄 Last updated: {lastUpdated.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-            </span>
-            <button
-              onClick={fetchDashboardData}
-              style={{
-                padding: '6px 14px',
-                background: '#6366f1',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-              }}
-            >
-              🔄 Refresh
-            </button>
-          </div>
-        </div>
+        {/* ✅ REMOVED refresh button and last updated time */}
+        <h2>Admin Dashboard 📊</h2>
 
         {/* Stats Grid */}
         <div className="stats-grid">

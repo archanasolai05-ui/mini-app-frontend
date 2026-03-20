@@ -9,16 +9,10 @@ function AdminOrders() {
   const [loading, setLoading]     = useState(true)
   const [updating, setUpdating]   = useState(null)
   const [activeTab, setActiveTab] = useState('orders')
-  // ✅ ADD last updated time
-  const [lastUpdated, setLastUpdated] = useState(new Date())
 
   useEffect(() => {
     fetchAll()
-    // ✅ auto refresh every 30 seconds
-    const interval = setInterval(() => {
-      fetchAll()
-    }, 30000)
-    // ✅ cleanup when component unmounts
+    const interval = setInterval(() => { fetchAll() }, 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -30,8 +24,6 @@ function AdminOrders() {
       ])
       setOrders(ordersRes.data)
       setBookings(bookingsRes.data)
-      // ✅ update last refreshed time
-      setLastUpdated(new Date())
     } catch (err) {
       console.error(err)
     } finally {
@@ -43,10 +35,8 @@ function AdminOrders() {
     setUpdating(orderId)
     try {
       await updateOrderStatus(orderId, newStatus)
-      setOrders(orders.map((order) =>
-        order.id === orderId
-          ? { ...order, status: newStatus }
-          : order
+      setOrders(orders.map((o) =>
+        o.id === orderId ? { ...o, status: newStatus } : o
       ))
     } catch (err) {
       alert('Failed to update status')
@@ -59,10 +49,8 @@ function AdminOrders() {
     setUpdating(bookingId)
     try {
       await updateBookingStatus(bookingId, newStatus)
-      setBookings(bookings.map((booking) =>
-        booking.id === bookingId
-          ? { ...booking, status: newStatus }
-          : booking
+      setBookings(bookings.map((b) =>
+        b.id === bookingId ? { ...b, status: newStatus } : b
       ))
     } catch (err) {
       alert('Failed to update booking status')
@@ -73,26 +61,23 @@ function AdminOrders() {
 
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      day: 'numeric', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
     })
   }
 
   const formatVisitDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
+      day: 'numeric', month: 'short', year: 'numeric',
       timeZone: 'Asia/Kolkata',
     })
   }
 
-  const statusOptions = ['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED']
+  const statusOptions        = ['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED']
   const bookingStatusOptions = ['PENDING', 'CONFIRMED', 'CANCELLED']
-  const ordersOnly = orders.filter(order => !order.bookingId && !order.tableId)
+  const ordersOnly           = orders.filter(o => !o.bookingId && !o.tableId)
+  const tableBookingOnly     = bookings.filter(b => !b.order?.id)
+  const bookingWithOrder     = bookings.filter(b => b.order?.id)
 
   if (loading) return (
     <div className="adminorders-page">
@@ -101,45 +86,81 @@ function AdminOrders() {
     </div>
   )
 
+  const BookingCard = ({ booking }) => (
+    <div className="order-card-admin" style={{ marginBottom: '16px' }}>
+      <div className="order-card-admin-header">
+        <div className="order-customer">
+          <h4>Booking #{booking.id}</h4>
+          <p>👤 {booking.user.name} ({booking.user.email})</p>
+          {booking.user.phone && <p>📞 {booking.user.phone}</p>}
+          <p>📅 Booked: {formatDate(booking.createdAt)}</p>
+          <p>🗓️ Visit: {formatVisitDate(booking.date)}</p>
+          <p>⏰ {booking.timeSlot}</p>
+          <p>🪑 Table {booking.table.tableNumber} — {booking.table.location}</p>
+          <p>👥 Guests: {booking.guestCount}</p>
+          {booking.createdByAdmin && (
+            <p className="admin-created-badge">Created by Admin</p>
+          )}
+        </div>
+        <span className={`booking-status status-${booking.status}`}>
+          {booking.status}
+        </span>
+      </div>
+
+      {booking.order && (
+        <div className="order-card-admin-items">
+          <p style={{ fontWeight: '600', marginBottom: '6px' }}>
+            🍛 Order #{booking.order.id}:
+          </p>
+          {booking.order.items?.map((item) => (
+            <p key={item.id}>
+              • {item.menuItem.name} x{item.quantity} → ₹{item.price * item.quantity}
+            </p>
+          ))}
+          <p style={{ marginTop: '6px', fontWeight: '600' }}>
+            Total: ₹{booking.order.totalPrice}
+          </p>
+        </div>
+      )}
+
+      <div className="order-card-admin-footer">
+        <strong>
+          {booking.order ? `Order Total: ₹${booking.order.totalPrice}` : 'Table Booking Only'}
+        </strong>
+        <select
+          className="status-select"
+          value={booking.status}
+          onChange={(e) => handleBookingStatusChange(booking.id, e.target.value)}
+          disabled={
+            updating === booking.id ||
+            booking.status === 'CONFIRMED' ||
+            booking.status === 'CANCELLED'
+          }
+        >
+          {bookingStatusOptions.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        {updating === booking.id && (
+          <span className="updating-text">Updating...</span>
+        )}
+      </div>
+    </div>
+  )
+
   return (
     <div className="adminorders-page">
       <Navbar />
       <div className="adminorders-content">
+        <h2>All Orders 🍛</h2>
 
-        {/* ✅ header with refresh button and last updated time */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <h2>All Orders 🍛</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '0.8rem', color: '#888' }}>
-              🔄 Last updated: {lastUpdated.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-            </span>
-            <button
-              onClick={fetchAll}
-              style={{
-                padding: '6px 14px',
-                background: '#6366f1',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-              }}
-            >
-              🔄 Refresh
-            </button>
-          </div>
-        </div>
-
+        {/* Tab buttons */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
           <button
             onClick={() => setActiveTab('orders')}
             style={{
-              padding: '10px 24px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: '600',
+              padding: '10px 24px', borderRadius: '8px', border: 'none',
+              cursor: 'pointer', fontWeight: '600',
               background: activeTab === 'orders' ? '#6366f1' : '#e0e0e0',
               color: activeTab === 'orders' ? 'white' : '#555',
             }}
@@ -149,11 +170,8 @@ function AdminOrders() {
           <button
             onClick={() => setActiveTab('bookings')}
             style={{
-              padding: '10px 24px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: '600',
+              padding: '10px 24px', borderRadius: '8px', border: 'none',
+              cursor: 'pointer', fontWeight: '600',
               background: activeTab === 'bookings' ? '#6366f1' : '#e0e0e0',
               color: activeTab === 'bookings' ? 'white' : '#555',
             }}
@@ -176,7 +194,6 @@ function AdminOrders() {
                       <p>👤 {order.user.name} ({order.user.email})</p>
                       {order.user.phone && <p>📞 {order.user.phone}</p>}
                       <p>📅 {formatDate(order.createdAt)}</p>
-                      {order.tableId && <p>🪑 Table #{order.tableId}</p>}
                       {order.createdByAdmin && (
                         <p className="admin-created-badge">Created by Admin</p>
                       )}
@@ -185,16 +202,13 @@ function AdminOrders() {
                       {order.status}
                     </span>
                   </div>
-
                   <div className="order-card-admin-items">
                     {order.items.map((item) => (
                       <p key={item.id}>
-                        • {item.menuItem.name} x{item.quantity}
-                        → ₹{item.price * item.quantity}
+                        • {item.menuItem.name} x{item.quantity} → ₹{item.price * item.quantity}
                       </p>
                     ))}
                   </div>
-
                   <div className="order-card-admin-footer">
                     <strong>Total: ₹{order.totalPrice}</strong>
                     <select
@@ -221,80 +235,49 @@ function AdminOrders() {
           </>
         )}
 
-        {/* BOOKINGS & ORDERS TAB */}
+        {/* BOOKINGS & ORDERS TAB — 2 columns */}
         {activeTab === 'bookings' && (
-          <>
-            {bookings.length === 0 ? (
-              <div className="orders-empty">No bookings yet!</div>
-            ) : (
-              bookings.map((booking) => (
-                <div key={booking.id} className="order-card-admin">
-                  <div className="order-card-admin-header">
-                    <div className="order-customer">
-                      <h4>Booking #{booking.id}</h4>
-                      <p>👤 {booking.user.name} ({booking.user.email})</p>
-                      {booking.user.phone && <p>📞 {booking.user.phone}</p>}
-                      <p>📅 Booked On: {formatDate(booking.createdAt)}</p>
-                      <p>🗓️ Visit Date: {formatVisitDate(booking.date)}</p>
-                      <p>⏰ Time Slot: {booking.timeSlot}</p>
-                      <p>🪑 Table: {booking.table.tableNumber} — {booking.table.location}</p>
-                      <p>👥 Guests: {booking.guestCount}</p>
-                      {booking.createdByAdmin && (
-                        <p className="admin-created-badge">Created by Admin</p>
-                      )}
-                    </div>
-                    <span className={`booking-status status-${booking.status}`}>
-                      {booking.status}
-                    </span>
-                  </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
 
-                  {booking.order && (
-                    <div className="order-card-admin-items">
-                      <p style={{ fontWeight: '600', marginBottom: '6px' }}>
-                        🍛 Order #{booking.order.id}:
-                      </p>
-                      {booking.order.items?.map((item) => (
-                        <p key={item.id}>
-                          • {item.menuItem.name} x{item.quantity}
-                          → ₹{item.price * item.quantity}
-                        </p>
-                      ))}
-                      <p style={{ marginTop: '6px', fontWeight: '600' }}>
-                        Total: ₹{booking.order.totalPrice}
-                      </p>
-                    </div>
-                  )}
+            {/* LEFT — Table Booking Only */}
+            <div>
+              <h3 style={{
+                marginBottom: '16px', fontSize: '1rem', color: '#6366f1',
+                fontWeight: '700', borderBottom: '2px solid #6366f1', paddingBottom: '8px'
+              }}>
+                🪑 Table Booking Only ({tableBookingOnly.length})
+              </h3>
+              {tableBookingOnly.length === 0 ? (
+                <p style={{ color: '#888', textAlign: 'center', marginTop: '24px' }}>
+                  No table only bookings yet
+                </p>
+              ) : (
+                tableBookingOnly.map((booking) => (
+                  <BookingCard key={booking.id} booking={booking} />
+                ))
+              )}
+            </div>
 
-                  <div className="order-card-admin-footer">
-                    <strong>
-                      {booking.order
-                        ? `Order Total: ₹${booking.order.totalPrice}`
-                        : 'Table Booking Only'}
-                    </strong>
-                    <select
-                      className="status-select"
-                      value={booking.status}
-                      onChange={(e) =>
-                        handleBookingStatusChange(booking.id, e.target.value)
-                      }
-                      disabled={
-                        updating === booking.id ||
-                        booking.status === 'CONFIRMED' ||
-                        booking.status === 'CANCELLED'
-                      }
-                    >
-                      {bookingStatusOptions.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                    {updating === booking.id && (
-                      <span className="updating-text">Updating...</span>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </>
+            {/* RIGHT — Booking + Order */}
+            <div>
+              <h3 style={{
+                marginBottom: '16px', fontSize: '1rem', color: '#f59e0b',
+                fontWeight: '700', borderBottom: '2px solid #f59e0b', paddingBottom: '8px'
+              }}>
+                🍛 Booking + Order ({bookingWithOrder.length})
+              </h3>
+              {bookingWithOrder.length === 0 ? (
+                <p style={{ color: '#888', textAlign: 'center', marginTop: '24px' }}>
+                  No booking with orders yet
+                </p>
+              ) : (
+                bookingWithOrder.map((booking) => (
+                  <BookingCard key={booking.id} booking={booking} />
+                ))
+              )}
+            </div>
+
+          </div>
         )}
 
       </div>

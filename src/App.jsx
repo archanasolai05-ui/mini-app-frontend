@@ -16,7 +16,9 @@ import Dashboard     from './pages/admin/Dashboard'
 import ManageMenu    from './pages/admin/ManageMenu'
 import ManageTables  from './pages/admin/ManageTables'
 import AdminOrders   from './pages/admin/AdminOrders'
+// ✅ AdminBookings already exists — just making sure route is there
 import AdminBookings from './pages/admin/AdminBookings'
+import AdminReport   from './pages/admin/AdminReport'
 
 function ProtectedRoute({ children }) {
   const { isLoggedIn } = useSelector((state) => state.auth)
@@ -68,10 +70,7 @@ function App() {
       if (token) {
         try {
           const res = await getProfile()
-          dispatch(setCredentials({
-            user: res.data,
-            token,
-          }))
+          dispatch(setCredentials({ user: res.data, token }))
         } catch (err) {
           console.error('Session expired')
         }
@@ -82,79 +81,50 @@ function App() {
 
   return (
     <Routes>
-
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
       <Route path="/menu" element={
-        <ProtectedRoute>
-          <Menu />
-        </ProtectedRoute>
+        <ProtectedRoute><Menu /></ProtectedRoute>
       } />
-
       <Route path="/cart" element={
-        <ProtectedRoute>
-          <Cart />
-        </ProtectedRoute>
+        <ProtectedRoute><Cart /></ProtectedRoute>
       } />
-
       <Route path="/checkout" element={
-        <ProtectedRoute>
-          <Checkout />
-        </ProtectedRoute>
+        <ProtectedRoute><Checkout /></ProtectedRoute>
       } />
-
       <Route path="/my-orders" element={
-        <ProtectedRoute>
-          <MyOrders />
-        </ProtectedRoute>
+        <ProtectedRoute><MyOrders /></ProtectedRoute>
       } />
-
       <Route path="/book-table" element={
-        <ProtectedRoute>
-          <BookTable />
-        </ProtectedRoute>
+        <ProtectedRoute><BookTable /></ProtectedRoute>
       } />
-
       <Route path="/my-bookings" element={
-        <ProtectedRoute>
-          <MyBookings />
-        </ProtectedRoute>
+        <ProtectedRoute><MyBookings /></ProtectedRoute>
       } />
 
       <Route path="/admin/dashboard" element={
-        <AdminRoute>
-          <Dashboard />
-        </AdminRoute>
+        <AdminRoute><Dashboard /></AdminRoute>
       } />
-
       <Route path="/admin/menu" element={
-        <AdminRoute>
-          <ManageMenu />
-        </AdminRoute>
+        <AdminRoute><ManageMenu /></AdminRoute>
       } />
-
       <Route path="/admin/tables" element={
-        <AdminRoute>
-          <ManageTables />
-        </AdminRoute>
+        <AdminRoute><ManageTables /></AdminRoute>
       } />
-
       <Route path="/admin/orders" element={
-        <AdminRoute>
-          <AdminOrders />
-        </AdminRoute>
+        <AdminRoute><AdminOrders /></AdminRoute>
       } />
-
+      {/* ✅ AdminBookings route restored */}
       <Route path="/admin/bookings" element={
-        <AdminRoute>
-          <AdminBookings />
-        </AdminRoute>
+        <AdminRoute><AdminBookings /></AdminRoute>
+      } />
+      <Route path="/admin/report" element={
+        <AdminRoute><AdminReport /></AdminRoute>
       } />
 
       <Route path="*" element={<NotFound />} />
-
     </Routes>
   )
 }
